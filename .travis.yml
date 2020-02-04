@@ -4,6 +4,26 @@ python:
   - 2.7
 install:
   - pip install flake8
-script:
-  - flake8 configsnap --count --max-line-length=127 --show-source --statistics
-  - sudo ./test_configsnap.py
+jobs:
+  include:
+    - stage: test
+      script:
+        - flake8 configsnap --count --max-line-length=127 --show-source --statistics
+        - sudo ./test_configsnap.py
+
+    - stage: deploy
+      if: tag IS present AND repo = 'rackerlabs/configsnap'
+      script:
+        - mkdir -p BUILD/pkgs
+        - docker-compose up
+      deploy:
+        provider: releases
+        file: './BUILD/pkgs/*'
+        prerelease: true
+        edge: true
+        on:
+          tags: true
+
+stages:
+  - test
+  - deploy
