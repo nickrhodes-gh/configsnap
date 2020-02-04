@@ -16,7 +16,7 @@ BUILD_FILES += MAINTAINERS.md NEWS
 
 # package info
 UPSTREAM := "https://github.com/rackerlabs/${NAME}.git"
-VERSION := $(shell git tag -l | sort -V | tail -n 1)
+VERSION := $(shell gawk -F':[[:space:]]+' '/^Version:/{print $$2}' ${NAME}.spec)
 RELEASE := $(shell gawk '/^Release:\s+/{print gensub(/%.*/,"","g",$$2)}' ${NAME}.spec)
 COMMIT := $(shell git log --pretty=format:'%h' -n 1)
 DATE := $(shell date --iso-8601)
@@ -25,7 +25,7 @@ DATELONG := $(shell date --iso-8601=seconds)
 # build info
 BUILD_ROOT := "BUILD"
 BUILD_DIR := "${NAME}-${VERSION}"
-OUT_DIR := "${HOME}/output"
+OUT_DIR := "${BUILD_ROOT}/pkgs/"
 DIST := $(shell python -c "import platform; print(platform.linux_distribution()[0])")
 DEB_DIST := "xenial"
 
@@ -50,6 +50,7 @@ el6 el7 fedora: ${BUILD_FILES}
 		&& cp ${VERSION}.tar.gz ${RPM_SRCDIR}/
 	cp ${NAME}.spec ${RPM_SPECDIR}/
 	rpmbuild -ba ${RPM_SPECDIR}/${NAME}.spec
+	install ${RPM_RPMDIR}/noarch/*.rpm ${OUT_DIR}
 
 deb: ${BUILD_FILES}
 	@echo "Building release ${VERSION}_${RELEASE} for $@"
@@ -62,6 +63,7 @@ deb: ${BUILD_FILES}
 	cd ${BUILD_ROOT}/$@/${BUILD_DIR} \
 		&& debchange -M --create --package ${NAME} --force-distribution -D ${DEB_DIST} -v ${VERSION}-${RELEASE} ${NAME} ${VERSION}-${RELEASE} \
 		&& debuild -i -us -uc -b
+	install BUILD/deb/${NAME}_${VERSION}-${RELEASE}_all.deb ${OUT_DIR}
 
 variables:
 	@echo "DIST:  		${DIST}"

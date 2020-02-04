@@ -1,8 +1,8 @@
 FROM centos:6
 RUN yum install -q -y git rpm-build rpm-devel rpmlint make python rpmdevtools \
     help2man python2-devel \
-    && groupadd -g 1004 builduser \
-    && useradd -m -u 1003 -g builduser builduser
+    && groupadd -g 2000 builduser \
+    && useradd -m -u 2000 -g builduser builduser
 
 USER builduser
 RUN mkdir /home/builduser/configsnap \
