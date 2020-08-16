@@ -12,7 +12,7 @@ jobs:
         - sudo ./test_configsnap.py
 
     - stage: deploy
-      if: tag IS present AND repo = 'rackerlabs/configsnap'
+      if: tag IS present
       script:
         - mkdir -p BUILD/pkgs
         - docker-compose up
